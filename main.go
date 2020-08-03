@@ -1,36 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 )
 
 func main() {
-	resp, err := http.Get("http://www.google.at")
-	if err != nil {
-		log.Fatal(err)
+	h1 := func(w http.ResponseWriter, _ *http.Request) {
+		io.WriteString(w, "Hello from a HandleFunc #1!\n")
 	}
-	defer resp.Body.Close()
-	//body := make([]byte, 99999)
-	//l, _ := resp.Body.Read(body)
-	//fmt.Println("length: ", l)
-	//fmt.Println(string(body))
+	h2 := func(w http.ResponseWriter, _ *http.Request) {
+		io.WriteString(w, "Hello from a HandleFunc #2!\n")
+	}
 
-	t := testWriter{}
-	//l, err := t.Write([]byte("qqwvqwqvwqqwwq"))
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println("length:", l)
-	io.Copy(t, resp.Body)
-}
+	http.HandleFunc("/", h1)
+	http.HandleFunc("/endpoint", h2)
 
-type testWriter struct{}
-
-func (t testWriter) Write(p []byte) (n int, err error) {
-	fmt.Println(string(p))
-	fmt.Println("bytes written; ", len(p))
-	return len(p), nil
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
